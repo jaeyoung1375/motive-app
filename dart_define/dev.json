@@ -1,0 +1,6 @@
+{
+  "API_BASE_URL": "https://motiveapp.duckdns.org",
+  "OAUTH_GOOGLE_URL": "https://motiveapp.duckdns.org/oauth2/authorization/google?platform=mobile",
+  "OAUTH_KAKAO_URL": "https://motiveapp.duckdns.org/oauth2/authorization/kakao?platform=mobile",
+  "OAUTH_GITHUB_URL": "https://motiveapp.duckdns.org/oauth2/authorization/github?platform=mobile"
+}
