@@ -7,6 +7,7 @@ import '../../workout_record/provider/workout_record_provider.dart';
 
 const _background = Color(0xFFF4F8FF);
 const _point = Color(0xFF2F80FF);
+const _iconBg = Color(0xFFE4EEFF);
 const _textPrimary = Color(0xFF0B1220);
 const _textSecondary = Color(0xFF64748B);
 const _placeholder = Color(0xFF94A3B8);
@@ -152,63 +153,50 @@ class RecordDetailPage extends ConsumerWidget {
                             Padding(
                               padding: const EdgeInsets.only(top: 16),
                               child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.stretch,
                                 children: [
                                   for (final ex in record.exercises)
                                     Padding(
                                       padding: const EdgeInsets.only(bottom: 12),
-                                      child: DecoratedBox(
+                                      child: Container(
+                                        padding: const EdgeInsets.all(12),
                                         decoration: BoxDecoration(
                                           color: Colors.white,
                                           borderRadius: BorderRadius.circular(12),
                                           border: Border.all(color: _border),
                                         ),
-                                        child: Column(
-                                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                                        child: Row(
                                           children: [
                                             Container(
-                                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                                              decoration: const BoxDecoration(
-                                                border: Border(bottom: BorderSide(color: _border)),
+                                              width: 52,
+                                              height: 52,
+                                              decoration: BoxDecoration(
+                                                color: _iconBg,
+                                                borderRadius: BorderRadius.circular(10),
                                               ),
-                                              child: Text(
-                                                ex.exerciseName,
-                                                style: const TextStyle(
-                                                  fontSize: 14,
-                                                  fontWeight: FontWeight.w600,
-                                                  color: _textPrimary,
-                                                ),
+                                              child: const Icon(Icons.fitness_center, size: 22, color: _point),
+                                            ),
+                                            const SizedBox(width: 12),
+                                            Expanded(
+                                              child: Column(
+                                                crossAxisAlignment: CrossAxisAlignment.start,
+                                                children: [
+                                                  Text(
+                                                    ex.exerciseName,
+                                                    style: const TextStyle(
+                                                      fontSize: 14,
+                                                      fontWeight: FontWeight.w600,
+                                                      color: _textPrimary,
+                                                    ),
+                                                  ),
+                                                  const SizedBox(height: 4),
+                                                  Text(
+                                                    _formatSetsSummary(ex.sets),
+                                                    style: const TextStyle(fontSize: 12, color: _textSecondary),
+                                                  ),
+                                                ],
                                               ),
                                             ),
-                                            for (var i = 0; i < ex.sets.length; i++)
-                                              Container(
-                                                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                                                decoration: i > 0
-                                                    ? const BoxDecoration(
-                                                        border: Border(top: BorderSide(color: _border)),
-                                                      )
-                                                    : null,
-                                                child: Row(
-                                                  children: [
-                                                    SizedBox(
-                                                      width: 40,
-                                                      child: Text(
-                                                        '${ex.sets[i].setNo}세트',
-                                                        style: const TextStyle(
-                                                          fontSize: 13,
-                                                          fontWeight: FontWeight.w600,
-                                                          color: _textSecondary,
-                                                        ),
-                                                      ),
-                                                    ),
-                                                    Text('${_formatWeight(ex.sets[i].weight)}kg', style: const TextStyle(fontSize: 14, color: _textPrimary)),
-                                                    const Padding(
-                                                      padding: EdgeInsets.symmetric(horizontal: 6),
-                                                      child: Text('×', style: TextStyle(fontSize: 14, color: _placeholder)),
-                                                    ),
-                                                    Text('${ex.sets[i].reps}회', style: const TextStyle(fontSize: 14, color: _textPrimary)),
-                                                  ],
-                                                ),
-                                              ),
                                           ],
                                         ),
                                       ),
@@ -231,3 +219,17 @@ class RecordDetailPage extends ConsumerWidget {
 }
 
 String _formatWeight(double v) => v == v.truncateToDouble() ? v.toInt().toString() : v.toString();
+
+/// 중량이 0이면(맨몸 운동) "Xkg" 표기를 뺀다.
+String _formatWeightReps(double weight, int reps) =>
+    weight == 0 ? '$reps회' : '${_formatWeight(weight)}kg X $reps회';
+
+/// 세트가 전부 같은 중량/횟수면 "N세트 X Xkg X N회"로, 세트마다 다르면(직접 수정한
+/// 기록) 세트별로 풀어서 보여준다.
+String _formatSetsSummary(List<WorkoutRecordSetResponse> sets) {
+  final uniform = sets.every((s) => s.weight == sets.first.weight && s.reps == sets.first.reps);
+  if (uniform) {
+    return '${sets.length}세트 X ${_formatWeightReps(sets.first.weight, sets.first.reps)}';
+  }
+  return sets.map((s) => '${s.setNo}세트 X ${_formatWeightReps(s.weight, s.reps)}').join('\n');
+}
